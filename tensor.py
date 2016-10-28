@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Oct  3 16:55:01 2016
-
 @author: jonmcewan
 """
 #adapted from: https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/learn/wide_n_deep_tutorial.py
@@ -67,25 +66,20 @@ def build_estimator(model_dir):
   """Build an estimator."""
 
   # Continuous base columns.
-  bi_name_gn = tf.contrib.layers.real_valued_column("bi_name_gn")
-  bi_name_surn = tf.contrib.layers.real_valued_column("bi_name_surn")
-  jaro_name_gn = tf.contrib.layers.real_valued_column("jaro_name_gn")
-  jaro_name_surn = tf.contrib.layers.real_valued_column("jaro_name_surn")
-  town_match = tf.contrib.layers.real_valued_column("town_match")
-  year_match = tf.contrib.layers.real_valued_column("year_match")
-  month_match = tf.contrib.layers.real_valued_column("month_match")
+  continuous_cols = []
+  continuous_len = len(CONTINUOUS_COLUMNS)
+  for i in range(0,continuous_len):
+      continuous_cols.append(tf.contrib.layers.real_valued_column(CONTINUOUS_COLUMNS[i]))
+  # Categorical base columns.
+  categorical_cols = []
+  categorical_len = len(CATEGORICAL_COLUMNS)
+  for i in range(0,categorical_len):
+      categorical_cols.append(tf.contrib.layers.real_valued_column(CONTINUOUS_COLUMNS[i]))
+
 
   # Wide columns and deep columns.
-  wide_columns = []
-  deep_columns = [
-      bi_name_gn,
-      bi_name_surn,
-      jaro_name_gn,
-      jaro_name_surn,
-      town_match,
-      year_match,
-      month_match
-  ]
+  wide_columns = categorical_columns
+  deep_columns = continuous_columns
 
   if FLAGS.model_type == "wide":
     m = tf.contrib.learn.LinearClassifier(model_dir=model_dir,
@@ -107,7 +101,7 @@ def input_fn(df):
   # the values of that column stored in a constant Tensor.
     continuous_cols = {k: tf.constant(df[k].values)
                      for k in CONTINUOUS_COLUMNS}
-    label = tf.constant(df['match'].values)
+    label = tf.constant(df['loss'].values)
     return continuous_cols, label
   
 def train_input_fn():
@@ -131,4 +125,3 @@ def main(_):
 
 if __name__ == "__main__":
     tf.app.run()
-    
